@@ -56,6 +56,25 @@ void loop() {
     lcd.print("Player 2 Works");
   }
 
+  if ((player1 == HIGH && lastP1 == LOW) && (player2 == HIGH && lastP2 == LOW)) {
+    lcd.clear();
+    lcd.setCursor(1, 0);
+    lcd.print("The Game Will");
+    lcd.setCursor(4,1);
+    lcd.print("Begin In");
+    
+    delay(3000);
+
+    for (int i = 5; i > 0; i--) {
+      lcd.clear();
+      lcd.setCursor(7, 0);
+      lcd.print(i);
+      delay(1000);
+    }
+
+
+  }
+
   lastP1 = player1;
   lastP2 = player2;
 
