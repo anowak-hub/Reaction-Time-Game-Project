@@ -27,6 +27,9 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 int lastP1 = LOW;
 int lastP2 = LOW;
 
+// Initalize Random Number
+long random_num;
+
 // Code Implementation
 void setup() {
   // Setup for Player 1 and Player 2 
@@ -37,6 +40,15 @@ void setup() {
   // Setup the LCD Display 
   lcd.init();
   lcd.backlight();
+
+  // Setup the Random Seed
+  randomSeed(analogRead(0));
+
+  // Setup the LED Light
+  pinMode(9, OUTPUT);
+
+  // Setup the Active Buzzer
+  pinMode(7, OUTPUT);
 }
 
 void loop() {
@@ -44,18 +56,20 @@ void loop() {
   int player1 = digitalRead(2);
   int player2 = digitalRead(3);
 
+  // Game Menu and Initialization
   if (player1 == HIGH && lastP1 == LOW) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Player 1 Works");
+    lcd.print("Player 1 Ready");
   }
 
   if(player2 == HIGH && lastP2 == LOW) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Player 2 Works");
+    lcd.print("Player 2 Ready");
   }
 
+  // Game Start and Confirmation
   if ((player1 == HIGH && lastP1 == LOW) && (player2 == HIGH && lastP2 == LOW)) {
     lcd.clear();
     lcd.setCursor(1, 0);
@@ -72,6 +86,24 @@ void loop() {
       delay(1000);
     }
 
+    lcd.clear();
+    lcd.setCursor(2, 0);
+    lcd.print("Watch/Listen");
+    lcd.setCursor(4, 1);
+    lcd.print("Carefully");
+
+    // Randomize the LED and Buzzer Output
+    random_num = random(3000,10000);
+
+    if (random_num % 2 == 0) {
+      delay(random_num);
+      digitalWrite(9, HIGH);
+    } else {
+      delay(random_num);
+      digitalWrite(7, HIGH);
+    }
+
+    
 
   }
 
