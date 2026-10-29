@@ -7,14 +7,14 @@
 
 ## Project Description
 
-A mechatronics project that tests and compares player reaction times. The LCD explains the game, the player waits a random amount of time, and an LED lights up as the signal. The player presses their button as fast as possible. The faster the reaction, the more points they score. Two buttons allow head-to-head play, where the first valid press wins the round.
+A mechatronics project that tests and compares player reaction times. The LCD explains the game, the player waits a random amount of time, and an LED or buzzer signals the start. The player presses their button as fast as possible. The faster the reaction, the more points they score. Two buttons allow head-to-head play, where the first valid press wins the round.
 
 ## Goals
 
 - Display game instructions and results on a 16x2 I2C LCD
-- Use a randomized delay before the LED signal so players can't predict it
-- Measure reaction time in milliseconds from the LED signal to the button press
-- Detect false starts (pressing before the LED turns on)
+- Use a randomized delay before the LED or buzzer signal so players can't predict it
+- Measure reaction time in milliseconds from the signal to the button press
+- Detect false starts (pressing before the signal)
 - Support two-player mode with winner determination
 - Track each player's best time and a five-round average
 - Give audio feedback with a buzzer
@@ -59,11 +59,15 @@ A mechatronics project that tests and compares player reaction times. The LCD ex
 
 ### Completed
 
-- **LCD communication:** The I2C LCD initializes and displays text.
-- **Button input:** Both buttons are read on pins 2 and 3.
-- **Press detection:** Detecting the moment of the press (LOW to HIGH) instead of the held state keeps the message on the LCD after the button is released.
-- **Two-line output:** `setCursor(column, row)` places text on each line.
-- **Centered text:** A `printCentered()` helper centers messages using `(16 - length) / 2`.
+- [x] **LCD communication:** The I2C LCD initializes and displays text.
+- [x] **Button input:** Both buttons are read on pins 2 and 3.
+- [x] **Press detection:** Detecting the moment of the press (LOW to HIGH) instead of the held state keeps the message on the LCD after the button is released.
+- [x] **Two-line output:** `setCursor(column, row)` places text on each line.
+- [x] **Centered text:** A `printCentered()` helper centers messages using `(16 - length) / 2`.
+- [x] **LED signal on pin 9**
+- [x] **Buzzer feedback on pin 7**
+- [x] **Randomized delay** before the LED or buzzer turns on (`random(3000, 10000)`)
+- [x] Reaction time measurement (`millis()`)
 
 ### Issues Found and Fixed
 
@@ -72,61 +76,12 @@ A mechatronics project that tests and compares player reaction times. The LCD ex
 | Message only showed while the button was held | The loop cleared and redrew the LCD every cycle | Update the LCD only on a detected press |
 | Nothing displayed after the first fix | A leftover `lcd.clear()` at the top of `loop()` erased the message every 20 ms | Removed the extra `lcd.clear()` |
 | Text not printing correctly | `lcd.println()` was used | Switched to `lcd.print()` |
-
-### Current Test Sketch (button to LCD)
-
-```cpp
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
-
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
-int lastP1 = LOW;
-int lastP2 = LOW;
-
-void printCentered(const char* text, int row) {
-  int col = (16 - strlen(text)) / 2;
-  if (col < 0) col = 0;
-  lcd.setCursor(col, row);
-  lcd.print(text);
-}
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(2, INPUT); // Player 1
-  pinMode(3, INPUT); // Player 2
-  lcd.init();
-  lcd.backlight();
-}
-
-void loop() {
-  int player1 = digitalRead(2);
-  int player2 = digitalRead(3);
-
-  if (player1 == HIGH && lastP1 == LOW) {
-    lcd.clear();
-    printCentered("Player 1", 0);
-    printCentered("Wins!", 1);
-  }
-
-  if (player2 == HIGH && lastP2 == LOW) {
-    lcd.clear();
-    printCentered("Player 2", 0);
-    printCentered("Wins!", 1);
-  }
-
-  lastP1 = player1;
-  lastP2 = player2;
-  delay(20); // short delay also helps debounce
-}
-```
+| Pressing a button after a signal looped back to the "Ready" message instead of recording a time | Button values were read once at the top of `loop()` and never refreshed inside the game block | Re-read the buttons continuously after the signal turns on |
+| Game never started | The start condition required both buttons to be pressed within the same 20 ms loop pass | Track each player's ready state with `p1Ready` / `p2Ready` flags |
+| Reaction time displayed as garbage text | `"Player 1: " + reaction_time` adds a number to a string pointer in C++ | Print the label and the number with separate `lcd.print()` calls |
 
 ### Still To Test
 
-- [x] LED signal on pin 9
-- [x] Buzzer feedback on pin 7
-- [x] Randomized delay before the LED or Buzzer turns on
-- [ ] Reaction time measurement (`millis()`)
 - [ ] False-start detection
 - [ ] Two-player winner logic
 - [ ] Best time tracking and five-round average
