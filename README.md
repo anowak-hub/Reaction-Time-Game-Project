@@ -123,9 +123,9 @@ void loop() {
 
 ### Still To Test
 
-- [ ] LED signal on pin 9
-- [ ] Buzzer feedback on pin 7
-- [ ] Randomized delay before the LED turns on
+- [x ] LED signal on pin 9
+- [x ] Buzzer feedback on pin 7
+- [x ] Randomized delay before the LED or Buzzer turns on
 - [ ] Reaction time measurement (`millis()`)
 - [ ] False-start detection
 - [ ] Two-player winner logic
